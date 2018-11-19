@@ -20,13 +20,11 @@ int main(int argc, char** argv )
     }
 
     cv::Mat newimage(image.rows, image.cols, CV_8UC1);
+
     median_filter_simple(image, newimage);
-    cv::namedWindow("Display Image", cv::WINDOW_AUTOSIZE );
-    cv::imshow("Display Image", newimage);
-
-    cv::waitKey(0);
-
-    imwrite("output.png", newimage);
+    imwrite("output/output_simple.png", newimage);
+    median_filter_optimized(image, newimage);
+    imwrite("output/output_optimized.png", newimage);
 
     return 0;
 }
