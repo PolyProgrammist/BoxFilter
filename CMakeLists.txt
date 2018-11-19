@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 2.8)
+project( MedianFilter )
+find_package( OpenCV REQUIRED )
+add_executable( MedianFilter main.cpp median_filter.cpp median_filter.h)
+target_link_libraries( MedianFilter ${OpenCV_LIBS} )
