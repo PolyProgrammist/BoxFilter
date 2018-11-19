@@ -23,7 +23,9 @@ int main(int argc, char** argv )
 
     median_filter_simple(image, newimage);
     imwrite("output/output_simple.png", newimage);
-    median_filter_optimized(image, newimage);
+    for (int i = 0; i < 10; i++) {
+        median_filter_optimized(image, newimage);
+    }
     imwrite("output/output_optimized.png", newimage);
 
     return 0;

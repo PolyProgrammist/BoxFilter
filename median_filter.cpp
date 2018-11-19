@@ -60,24 +60,25 @@ MedianFilterOptimized::MedianFilterOptimized(cv::Mat image, int filter_size) : _
 
 void MedianFilterOptimized::process(cv::Mat &destination) {
     uchar filter[25];
-    for (int y = 0; y < _image.rows; y++) {
+    const int _filter_size_half = _filter_size / 2;
+    for (int y = _filter_size_half; y < _image.rows; y++) {
         for (int x = 0; x < _image.cols; x++) {
             if (
-                    y < _filter_size / 2 ||
-                    x < _filter_size / 2 ||
-                    y + _filter_size / 2 >= _image.rows ||
-                    x + _filter_size / 2 >= _image.cols
+                    y < _filter_size_half ||
+                    x < _filter_size_half ||
+                    y + _filter_size_half >= _image.rows ||
+                    x + _filter_size_half >= _image.cols
                     ) {
 
                 continue;
             }
             for (int i = 0; i < _filter_size; i++) {
                 for (int j = 0; j < _filter_size; j++) {
-                    filter[i * _filter_size + j] = _image.at<uchar>(y + i - _filter_size / 2, x + j - _filter_size / 2);
+                    filter[i * _filter_size + j] = _image.at<uchar>(y + i - _filter_size_half, x + j - _filter_size_half);
                 }
             }
             std::sort(filter, filter + 25);
-            destination.at<uchar>(y, x) = filter[_filter_size / 2];
+            destination.at<uchar>(y, x) = filter[_filter_size_half];
         }
     }
 }
