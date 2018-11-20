@@ -71,8 +71,8 @@ void MedianFilterOptimized::process(cv::Mat &destination) {
 
     for (int y = filter_size_half; y < row_ending; y++) {
         for (int x = filter_size_half; x < column_ending; x++) {
-            for (int i = minus_filter_size_half, now = 0; i < filter_size_half; i++) {
-                for (int j = minus_filter_size_half; j < filter_size_half; j++) {
+            for (int i = minus_filter_size_half, now = 0; i <= filter_size_half; i++) {
+                for (int j = minus_filter_size_half; j <= filter_size_half; j++) {
                     filter[now++] = _image.at<uchar>(y + i, x + j);
                 }
             }
