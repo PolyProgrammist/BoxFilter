@@ -4,9 +4,9 @@
 
 int main(int argc, char** argv )
 {
-    if ( argc != 2 )
+    if ( argc != 3 )
     {
-        std::cout << "usage: DisplayImage.out <Image_Path>" << std::endl;
+        std::cout << "usage: MedianFilter <input_image_file_name> <output_image_file_name" << std::endl;
         return -1;
     }
 
@@ -22,11 +22,8 @@ int main(int argc, char** argv )
     cv::Mat newimage(image.rows, image.cols, CV_8UC1);
 
     median_filter_simple(image, newimage);
-    imwrite("output/output_simple.png", newimage);
-    for (int i = 0; i < 10; i++) {
-        median_filter_optimized(image, newimage);
-    }
-    imwrite("output/output_optimized.png", newimage);
+    median_filter_optimized(image, newimage);
+    imwrite(argv[2], newimage);
 
     return 0;
 }
