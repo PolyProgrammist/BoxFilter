@@ -39,7 +39,7 @@ void MedianFilterSimple::process(cv::Mat &destination) {
                 }
             }
             std::sort(begin(filter), end(filter));
-            destination.at<uchar>(y, x) = filter[_filter_size / 2];
+            destination.at<uchar>(y, x) = filter[_filter_size * _filter_size / 2];
         }
     }
 }
@@ -53,32 +53,27 @@ MedianFilterOptimized::MedianFilterOptimized(cv::Mat image, int filter_size) : _
     if (image.channels() > 1) {
         throw std::invalid_argument("Image has more than 1 channel");
     }
-    if (filter_size % 2 != 1) {
+    if (filter_size != 5) {
         throw std::invalid_argument("Size of the filter is not odd");
     }
 }
 
 void MedianFilterOptimized::process(cv::Mat &destination) {
-    uchar filter[25];
-    const int _filter_size_half = _filter_size / 2;
-    for (int y = _filter_size_half; y < _image.rows; y++) {
-        for (int x = 0; x < _image.cols; x++) {
-            if (
-                    y < _filter_size_half ||
-                    x < _filter_size_half ||
-                    y + _filter_size_half >= _image.rows ||
-                    x + _filter_size_half >= _image.cols
-                    ) {
-
-                continue;
-            }
-            for (int i = 0; i < _filter_size; i++) {
+    const int filter_cells = _filter_size * _filter_size;
+    const int median = filter_cells / 2;
+    uchar filter[filter_cells];
+    const int filter_size_half = _filter_size / 2;
+    const int row_ending = _image.rows - filter_size_half;
+    const int column_ending = _image.cols - filter_size_half;
+    for (int y = filter_size_half; y < row_ending; y++) {
+        for (int x = filter_size_half; x < column_ending; x++) {
+            for (int i = 0, now = 0; i < _filter_size; i++) {
                 for (int j = 0; j < _filter_size; j++) {
-                    filter[i * _filter_size + j] = _image.at<uchar>(y + i - _filter_size_half, x + j - _filter_size_half);
+                    filter[now++] = _image.at<uchar>(y + i - filter_size_half, x + j - filter_size_half);
                 }
             }
-            std::sort(filter, filter + 25);
-            destination.at<uchar>(y, x) = filter[_filter_size_half];
+            std::nth_element(filter, filter + median, filter + filter_cells);
+            destination.at<uchar>(y, x) = filter[median];
         }
     }
 }
