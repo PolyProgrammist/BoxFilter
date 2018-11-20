@@ -62,18 +62,22 @@ void MedianFilterOptimized::process(cv::Mat &destination) {
     const int filter_cells = _filter_size * _filter_size;
     const int median = filter_cells / 2;
     uchar filter[filter_cells];
+    uchar *const filter_median = filter + median;
+    uchar *const filter_end = filter + filter_cells;
     const int filter_size_half = _filter_size / 2;
+    const int minus_filter_size_half = -filter_size_half;
     const int row_ending = _image.rows - filter_size_half;
     const int column_ending = _image.cols - filter_size_half;
+
     for (int y = filter_size_half; y < row_ending; y++) {
         for (int x = filter_size_half; x < column_ending; x++) {
-            for (int i = 0, now = 0; i < _filter_size; i++) {
-                for (int j = 0; j < _filter_size; j++) {
-                    filter[now++] = _image.at<uchar>(y + i - filter_size_half, x + j - filter_size_half);
+            for (int i = minus_filter_size_half, now = 0; i < filter_size_half; i++) {
+                for (int j = minus_filter_size_half; j < filter_size_half; j++) {
+                    filter[now++] = _image.at<uchar>(y + i, x + j);
                 }
             }
-            std::nth_element(filter, filter + median, filter + filter_cells);
-            destination.at<uchar>(y, x) = filter[median];
+            std::nth_element(filter, filter_median, filter_end);
+            destination.at<uchar>(y, x) = *filter_median;
         }
     }
 }
