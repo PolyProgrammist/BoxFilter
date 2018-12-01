@@ -74,7 +74,7 @@ void BoxFilterOptimized::process(cv::Mat &destination) {
             }
         }
         for (int x = filter_size_half; x < column_ending; x++) {
-            uint64_t current_sum = sum[x + filter_size_half] - (x != filter_size_half ? sum[x + minus_filter_size_half] : 0);
+            uint64_t current_sum = sum[x + filter_size_half] - (x != filter_size_half ? sum[x + minus_filter_size_half - 1] : 0);
             destination.at<uchar>(y, x) = static_cast<uchar>(current_sum / static_cast<double>(filter_cells));
         }
     }
