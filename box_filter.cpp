@@ -78,8 +78,9 @@ void BoxFilterOptimized::process(cv::Mat &destination) {
     }
 
     for (int y = 0; y < _filter_size; y++) {
+        s[y + 1][0] = _image.at<uchar>(y, 0);
         for (int x = 0; x < _image.cols; x++) {
-            s[y + 1][x] = _image.at<uchar>(y, x) + (x ? s[y + 1][x - 1]: 0);
+            s[y + 1][x] = _image.at<uchar>(y, x) + s[y + 1][x - 1];
             sum[x] += s[y + 1][x];
         }
     }
@@ -91,13 +92,18 @@ void BoxFilterOptimized::process(cv::Mat &destination) {
                 s[i] = s[i + 1];
             }
             s[_filter_size] = tmp;
-            for (int x = 0; x < _image.cols; x++) {
-                s[_filter_size][x] = _image.at<uchar>(y + filter_size_half, x) + (x ? s[_filter_size][x - 1] : 0);
+            s[_filter_size][0] = _image.at<uchar>(y + filter_size_half, 0);
+            sum[0] += s[_filter_size][0] - s[0][0];
+            for (int x = 1; x < _image.cols; x++) {
+                s[_filter_size][x] = _image.at<uchar>(y + filter_size_half, x) + s[_filter_size][x - 1];
                 sum[x] += s[_filter_size][x] - s[0][x];
             }
         }
-        for (int x = filter_size_half; x < column_ending; x++) {
-            uint64_t current_sum = sum[x + filter_size_half] - (x != filter_size_half ? sum[x + minus_filter_size_half - 1] : 0);
+
+        uint64_t current_sum = sum[filter_size_half + filter_size_half];
+        destination.at<uchar>(y, filter_size_half) = static_cast<uchar>(current_sum / static_cast<double>(filter_cells));
+        for (int x = filter_size_half + 1; x < column_ending; x++) {
+            uint64_t current_sum = sum[x + filter_size_half] - sum[x + minus_filter_size_half - 1];
             destination.at<uchar>(y, x) = static_cast<uchar>(current_sum / static_cast<double>(filter_cells));
         }
     }
