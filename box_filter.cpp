@@ -64,7 +64,7 @@ void BoxFilterOptimized::process(cv::Mat &destination) {
     const int row_ending = _image.rows - filter_size_half;
     const int column_ending = _image.cols - filter_size_half;
 
-    std::vector<uint32_t> sum(_image.cols);
+    uint32_t *sum = new uint32_t[_image.cols];
 
     for (int y = filter_size_half; y < row_ending; y++) {
         for (int x = 0; x < _image.cols; x++) {
@@ -78,6 +78,8 @@ void BoxFilterOptimized::process(cv::Mat &destination) {
             destination.at<uchar>(y, x) = static_cast<uchar>(current_sum / static_cast<double>(filter_cells));
         }
     }
+
+    delete [] sum;
 }
 
 void box_filter_optimized(cv::Mat &image, cv::Mat &destination) {
