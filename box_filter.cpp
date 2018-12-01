@@ -58,11 +58,6 @@ BoxFilterOptimized::BoxFilterOptimized(cv::Mat image, int filter_size) : _image(
 }
 
 void BoxFilterOptimized::process(cv::Mat &destination) {
-    const int filter_cells = _filter_size * _filter_size;
-    const int median = filter_cells / 2;
-    uchar filter[filter_cells];
-    uchar *const filter_median = filter + median;
-    uchar *const filter_end = filter + filter_cells;
     const int filter_size_half = _filter_size / 2;
     const int minus_filter_size_half = -filter_size_half;
     const int row_ending = _image.rows - filter_size_half;
@@ -70,13 +65,13 @@ void BoxFilterOptimized::process(cv::Mat &destination) {
 
     for (int y = filter_size_half; y < row_ending; y++) {
         for (int x = filter_size_half; x < column_ending; x++) {
-            for (int i = minus_filter_size_half, now = 0; i <= filter_size_half; i++) {
+            uint64_t sum = 0;
+            for (int i = minus_filter_size_half; i <= filter_size_half; i++) {
                 for (int j = minus_filter_size_half; j <= filter_size_half; j++) {
-                    filter[now++] = _image.at<uchar>(y + i, x + j);
+                    sum += _image.at<uchar>(y + i, x + j);
                 }
             }
-            std::nth_element(filter, filter_median, filter_end);
-            destination.at<uchar>(y, x) = *filter_median;
+            destination.at<uchar>(y, x) = static_cast<uchar>(sum / 25.0);;
         }
     }
 }

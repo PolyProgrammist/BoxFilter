@@ -21,8 +21,12 @@ int main(int argc, char** argv )
 
     cv::Mat newimage(image.rows, image.cols, CV_8UC1);
 
+    std::cout << "Simple" << std::endl;
     box_filter_simple(image, newimage);
-    box_filter_optimized(image, newimage);
+    std::cout << "Optimized" << std::endl;
+    for (int i = 0; i < 10; i++) {
+        box_filter_optimized(image, newimage);
+    }
     imwrite(argv[2], newimage);
 
     return 0;
