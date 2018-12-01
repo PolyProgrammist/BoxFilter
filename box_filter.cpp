@@ -64,13 +64,36 @@ void BoxFilterOptimized::process(cv::Mat &destination) {
     const int row_ending = _image.rows - filter_size_half;
     const int column_ending = _image.cols - filter_size_half;
 
+    uint32_t **s = new uint32_t*[_filter_size + 1];
+    for (int i = 0; i < _filter_size + 1; i++) {
+        s[i] = new uint32_t[_image.cols];
+    }
+    for (int j = 0; j < _image.cols; j++) {
+        s[0][j] = 0;
+    }
+
     uint32_t *sum = new uint32_t[_image.cols];
+    for (int x = 0; x < _image.cols; x++) {
+        sum[x] = 0;
+    }
+
+    for (int y = 0; y < _filter_size; y++) {
+        for (int x = 0; x < _image.cols; x++) {
+            s[y + 1][x] = _image.at<uchar>(y, x) + (x ? s[y + 1][x - 1]: 0);
+            sum[x] += s[y + 1][x];
+        }
+    }
 
     for (int y = filter_size_half; y < row_ending; y++) {
-        for (int x = 0; x < _image.cols; x++) {
-            sum[x] = x ? sum[x - 1] : 0;
-            for (int t = minus_filter_size_half; t <= filter_size_half; t++) {
-                sum[x] += _image.at<uchar>(y + t, x);
+        if (y > filter_size_half) {
+            uint32_t *tmp = s[0];
+            for (int i = 0; i < _filter_size; i++) {
+                s[i] = s[i + 1];
+            }
+            s[_filter_size] = tmp;
+            for (int x = 0; x < _image.cols; x++) {
+                s[_filter_size][x] = _image.at<uchar>(y + filter_size_half, x) + (x ? s[_filter_size][x - 1] : 0);
+                sum[x] += s[_filter_size][x] - s[0][x];
             }
         }
         for (int x = filter_size_half; x < column_ending; x++) {
@@ -80,6 +103,11 @@ void BoxFilterOptimized::process(cv::Mat &destination) {
     }
 
     delete [] sum;
+
+    for (int i = 0; i < _filter_size; i++) {
+        delete [] s[i];
+    }
+    delete [] s;
 }
 
 void box_filter_optimized(cv::Mat &image, cv::Mat &destination) {
