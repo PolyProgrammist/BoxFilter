@@ -38,7 +38,7 @@ void BoxFilterSimple::process(cv::Mat &destination) {
                     sum += _image.at<uchar>(y + i - _filter_size / 2, x + j - _filter_size / 2);
                 }
             }
-            destination.at<uchar>(y, x) = static_cast<uchar>(sum / 25.0);
+            destination.at<uchar>(y, x) = static_cast<uchar>(sum / (_filter_size * _filter_size));
         }
     }
 }
