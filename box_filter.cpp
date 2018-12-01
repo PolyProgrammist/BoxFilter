@@ -58,20 +58,24 @@ BoxFilterOptimized::BoxFilterOptimized(cv::Mat image, int filter_size) : _image(
 }
 
 void BoxFilterOptimized::process(cv::Mat &destination) {
+    const int filter_cells = _filter_size * _filter_size;
     const int filter_size_half = _filter_size / 2;
     const int minus_filter_size_half = -filter_size_half;
     const int row_ending = _image.rows - filter_size_half;
     const int column_ending = _image.cols - filter_size_half;
 
+    std::vector<uint32_t> sum(_image.cols);
+
     for (int y = filter_size_half; y < row_ending; y++) {
-        for (int x = filter_size_half; x < column_ending; x++) {
-            uint64_t sum = 0;
-            for (int i = minus_filter_size_half; i <= filter_size_half; i++) {
-                for (int j = minus_filter_size_half; j <= filter_size_half; j++) {
-                    sum += _image.at<uchar>(y + i, x + j);
-                }
+        for (int x = 0; x < _image.cols; x++) {
+            sum[x] = x ? sum[x - 1] : 0;
+            for (int t = minus_filter_size_half; t <= filter_size_half; t++) {
+                sum[x] += _image.at<uchar>(y + t, x);
             }
-            destination.at<uchar>(y, x) = static_cast<uchar>(sum / 25.0);;
+        }
+        for (int x = filter_size_half; x < column_ending; x++) {
+            uint64_t current_sum = sum[x + filter_size_half] - (x != filter_size_half ? sum[x + minus_filter_size_half] : 0);
+            destination.at<uchar>(y, x) = static_cast<uchar>(current_sum / static_cast<double>(filter_cells));
         }
     }
 }
