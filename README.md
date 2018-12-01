@@ -1,1 +1,1 @@
-# MedianFilter
+# BoxFilter
