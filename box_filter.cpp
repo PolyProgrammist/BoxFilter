@@ -63,12 +63,9 @@ void BoxFilterOptimized::process(cv::Mat &destination) {
     const int minus_filter_size_half = -filter_size_half;
     const int row_ending = _image.rows - filter_size_half;
     const int column_ending = _image.cols - filter_size_half;
-    const int filter_size_plus_one = _filter_size + 1;
-    const int filter_size_half_x2 = filter_size_half + filter_size_half;
-    const int filter_size_half_plus_one = filter_size_half + 1;
 
-    uint32_t **s = new uint32_t*[filter_size_plus_one];
-    for (int i = 0; i < filter_size_plus_one; i++) {
+    uint32_t **s = new uint32_t*[_filter_size + 1];
+    for (int i = 0; i < _filter_size + 1; i++) {
         s[i] = new uint32_t[_image.cols];
     }
     for (int j = 0; j < _image.cols; j++) {
@@ -81,11 +78,10 @@ void BoxFilterOptimized::process(cv::Mat &destination) {
     }
 
     for (int y = 0; y < _filter_size; y++) {
-        const int y_plus_one = y + 1;
-        s[y_plus_one][0] = _image.at<uchar>(y, 0);
+        s[y + 1][0] = _image.at<uchar>(y, 0);
         for (int x = 0; x < _image.cols; x++) {
-            s[y_plus_one][x] = _image.at<uchar>(y, x) + s[y_plus_one][x - 1];
-            sum[x] += s[y_plus_one][x];
+            s[y + 1][x] = _image.at<uchar>(y, x) + s[y + 1][x - 1];
+            sum[x] += s[y + 1][x];
         }
     }
 
@@ -98,16 +94,15 @@ void BoxFilterOptimized::process(cv::Mat &destination) {
             s[_filter_size] = tmp;
             s[_filter_size][0] = _image.at<uchar>(y + filter_size_half, 0);
             sum[0] += s[_filter_size][0] - s[0][0];
-            const int y_plus_filter_size_half = y + filter_size_half;
             for (int x = 1; x < _image.cols; x++) {
-                s[_filter_size][x] = _image.at<uchar>(y_plus_filter_size_half, x) + s[_filter_size][x - 1];
+                s[_filter_size][x] = _image.at<uchar>(y + filter_size_half, x) + s[_filter_size][x - 1];
                 sum[x] += s[_filter_size][x] - s[0][x];
             }
         }
 
-        uint64_t current_sum = sum[filter_size_half_x2];
+        uint64_t current_sum = sum[filter_size_half + filter_size_half];
         destination.at<uchar>(y, filter_size_half) = static_cast<uchar>(current_sum / static_cast<double>(filter_cells));
-        for (int x = filter_size_half_plus_one; x < column_ending; x++) {
+        for (int x = filter_size_half + 1; x < column_ending; x++) {
             uint64_t current_sum = sum[x + filter_size_half] - sum[x + minus_filter_size_half - 1];
             destination.at<uchar>(y, x) = static_cast<uchar>(current_sum / static_cast<double>(filter_cells));
         }
