@@ -1,12 +1,12 @@
 #include <iostream>
-#include "median_filter.h"
+#include "box_filter.h"
 
 
 int main(int argc, char** argv )
 {
     if ( argc != 3 )
     {
-        std::cout << "usage: MedianFilter <input_image_file_name> <output_image_file_name" << std::endl;
+        std::cout << "usage: BoxFilter <input_image_file_name> <output_image_file_name" << std::endl;
         return -1;
     }
 
@@ -21,8 +21,8 @@ int main(int argc, char** argv )
 
     cv::Mat newimage(image.rows, image.cols, CV_8UC1);
 
-    median_filter_simple(image, newimage);
-    median_filter_optimized(image, newimage);
+    box_filter_simple(image, newimage);
+    box_filter_optimized(image, newimage);
     imwrite(argv[2], newimage);
 
     return 0;

@@ -1,9 +1,9 @@
-#include "median_filter.h"
+#include "box_filter.h"
 
 #include <opencv2/opencv.hpp>
 #include <chrono>
 
-void median_filter(MedianFilter &mf, cv::Mat &destination) {
+void box_filter(BoxFilter &mf, cv::Mat &destination) {
     auto start = std::chrono::high_resolution_clock::now();
     mf.process(destination);
     auto finish = std::chrono::high_resolution_clock::now();
@@ -11,7 +11,7 @@ void median_filter(MedianFilter &mf, cv::Mat &destination) {
     std::cout << "Elapsed time: " << elapsed.count() << " s" << std::endl;
 }
 
-MedianFilterSimple::MedianFilterSimple(cv::Mat image, int filter_size) : _image(image), _filter_size(filter_size) {
+BoxFilterSimple::BoxFilterSimple(cv::Mat image, int filter_size) : _image(image), _filter_size(filter_size) {
     if (image.channels() > 1) {
         throw std::invalid_argument("Image has more than 1 channel");
     }
@@ -20,8 +20,7 @@ MedianFilterSimple::MedianFilterSimple(cv::Mat image, int filter_size) : _image(
     }
 }
 
-void MedianFilterSimple::process(cv::Mat &destination) {
-    std::vector<uchar> filter(_filter_size * _filter_size);
+void BoxFilterSimple::process(cv::Mat &destination) {
     for (int y = 0; y < _image.rows; y++) {
         for (int x = 0; x < _image.cols; x++) {
             if (
@@ -33,23 +32,23 @@ void MedianFilterSimple::process(cv::Mat &destination) {
 
                 continue;
             }
+            uint64_t sum = 0;
             for (int i = 0; i < _filter_size; i++) {
                 for (int j = 0; j < _filter_size; j++) {
-                    filter[i * _filter_size + j] = _image.at<uchar>(y + i - _filter_size / 2, x + j - _filter_size / 2);
+                    sum += _image.at<uchar>(y + i - _filter_size / 2, x + j - _filter_size / 2);
                 }
             }
-            std::sort(begin(filter), end(filter));
-            destination.at<uchar>(y, x) = filter[_filter_size * _filter_size / 2];
+            destination.at<uchar>(y, x) = static_cast<uchar>(sum / 25.0);
         }
     }
 }
 
-void median_filter_simple(cv::Mat &image, cv::Mat &destination) {
-    MedianFilterSimple sp(image, 5);
-    median_filter(sp, destination);
+void box_filter_simple(cv::Mat &image, cv::Mat &destination) {
+    BoxFilterSimple sp(image, 5);
+    box_filter(sp, destination);
 }
 
-MedianFilterOptimized::MedianFilterOptimized(cv::Mat image, int filter_size) : _image(image), _filter_size(filter_size) {
+BoxFilterOptimized::BoxFilterOptimized(cv::Mat image, int filter_size) : _image(image), _filter_size(filter_size) {
     if (image.channels() > 1) {
         throw std::invalid_argument("Image has more than 1 channel");
     }
@@ -58,7 +57,7 @@ MedianFilterOptimized::MedianFilterOptimized(cv::Mat image, int filter_size) : _
     }
 }
 
-void MedianFilterOptimized::process(cv::Mat &destination) {
+void BoxFilterOptimized::process(cv::Mat &destination) {
     const int filter_cells = _filter_size * _filter_size;
     const int median = filter_cells / 2;
     uchar filter[filter_cells];
@@ -82,7 +81,7 @@ void MedianFilterOptimized::process(cv::Mat &destination) {
     }
 }
 
-void median_filter_optimized(cv::Mat &image, cv::Mat &destination) {
-    MedianFilterOptimized sp(image, 5);
-    median_filter(sp, destination);
+void box_filter_optimized(cv::Mat &image, cv::Mat &destination) {
+    BoxFilterOptimized sp(image, 5);
+    box_filter(sp, destination);
 }
